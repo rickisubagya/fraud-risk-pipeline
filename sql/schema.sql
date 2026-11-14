@@ -19,3 +19,5 @@ CREATE TABLE IF NOT EXISTS fraud_labels (
     transaction_id BIGINT PRIMARY KEY REFERENCES transactions (transaction_id),
     is_fraud       BOOLEAN NOT NULL
 );
+
+CREATE INDEX IF NOT EXISTS idx_transactions_amount ON transactions (amount);
