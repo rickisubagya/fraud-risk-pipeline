@@ -21,3 +21,12 @@ CREATE TABLE IF NOT EXISTS fraud_labels (
 );
 
 CREATE INDEX IF NOT EXISTS idx_transactions_amount ON transactions (amount);
+
+CREATE TABLE IF NOT EXISTS fx_rates (
+    rate_date      DATE NOT NULL,
+    base_currency  CHAR(3) NOT NULL,
+    quote_currency CHAR(3) NOT NULL,
+    rate           NUMERIC(14, 4) NOT NULL CHECK (rate > 0),
+    fetched_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    PRIMARY KEY (rate_date, base_currency, quote_currency)
+);
