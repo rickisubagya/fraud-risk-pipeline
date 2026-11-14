@@ -1,21 +1,6 @@
-import os
+from sqlalchemy import text
 
-from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import URL
+from src.config import get_engine
 
-load_dotenv()
-
-url = URL.create(
-    drivername="postgresql+psycopg2",
-    username=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    host=os.getenv("DB_HOST"),
-    port=int(os.getenv("DB_PORT")),
-    database=os.getenv("DB_NAME")
-)
-
-engine = create_engine(url)
-
-with engine.connect() as conn:
+with get_engine().connect() as conn:
     print(conn.execute(text("SELECT version();")).scalar())

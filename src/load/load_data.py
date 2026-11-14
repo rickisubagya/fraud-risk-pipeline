@@ -1,22 +1,11 @@
-import os
 from pathlib import Path
 
 import pandas as pd
-from dotenv import load_dotenv
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import URL
+from sqlalchemy import text
 
-load_dotenv()
+from src.config import get_engine
 
-url = URL.create(
-    drivername="postgresql+psycopg2",
-    username=os.getenv("DB_USER"),
-    password=os.getenv("DB_PASSWORD"),
-    host=os.getenv("DB_HOST"),
-    port=int(os.getenv("DB_PORT")),
-    database=os.getenv("DB_NAME"),
-)
-engine = create_engine(url)
+engine = get_engine()
 
 df = pd.read_csv(Path("data/raw/creditcard.csv"))
 df.columns = [c.lower() for c in df.columns]
