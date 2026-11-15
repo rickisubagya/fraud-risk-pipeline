@@ -19,10 +19,7 @@ def validate(data):
     if data["rate"] <= 0:
         raise ValueError(f"Invalid rate: {data['rate']}")
 
-
-def main():
-    data = fetch_fx_rate()
-    validate(data)
+def save_fx_rate(data):
     with get_engine().begin() as conn:
         conn.execute(
             UPSERT_SQL,
@@ -33,6 +30,12 @@ def main():
                 "rate": data["rate"],
             },
         )
+
+
+def main():
+    data = fetch_fx_rate()
+    validate(data)
+    save_fx_rate(data)
     print("Saved:", data)
 
 
