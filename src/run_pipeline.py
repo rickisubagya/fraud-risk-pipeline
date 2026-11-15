@@ -4,6 +4,7 @@ from pathlib import Path
 
 from src.extract.fetch_fx_rate import fetch_fx_rate
 from src.load.load_fx_rate import save_fx_rate, validate
+from src.notify import send_telegram
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
@@ -32,11 +33,19 @@ def run():
     logger.info("Validation passed")
     save_fx_rate(data)
     logger.info("Pipeline finished")
+    return data
 
 
 if __name__ == "__main__":
     try:
-        run()
-    except Exception:
+        result = run()
+    except Exception as error:
         logger.exception("Pipeline failed")
+        send_telegram(
+            f"Pipeline FAILED ({type(error).__name__}). Check logs/pipeline.log"
+        )
         raise
+    else:
+        send_telegram(
+            f"Pipeline OK: 1 USD = {result['rate']} IDR on {result['date']}"
+        )
