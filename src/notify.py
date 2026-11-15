@@ -25,3 +25,13 @@ def send_telegram(message):
         response.raise_for_status()
     except requests.RequestException as error:
         logger.warning("Telegram notification failed: %s", type(error).__name__)
+
+def ping_heartbeat(suffix=""):
+    url = os.getenv("HEALTHCHECK_URL")
+    if not url:
+        logger.warning("Heartbeat URL is not configured; skipping heartbeat")
+        return
+    try:
+        requests.get(url + suffix, timeout=10).raise_for_status()
+    except requests.RequestException as error:
+        logger.warning("Heartbeat ping failed: %s", type(error).__name__)

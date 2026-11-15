@@ -4,7 +4,7 @@ from pathlib import Path
 
 from src.extract.fetch_fx_rate import fetch_fx_rate
 from src.load.load_fx_rate import save_fx_rate, validate
-from src.notify import send_telegram
+from src.notify import ping_heartbeat, send_telegram
 
 LOG_DIR = Path("logs")
 LOG_DIR.mkdir(exist_ok=True)
@@ -44,8 +44,10 @@ if __name__ == "__main__":
         send_telegram(
             f"Pipeline FAILED ({type(error).__name__}). Check logs/pipeline.log"
         )
+        ping_heartbeat("/fail")
         raise
     else:
         send_telegram(
             f"Pipeline OK: 1 USD = {result['rate']} IDR on {result['date']}"
         )
+        ping_heartbeat()
