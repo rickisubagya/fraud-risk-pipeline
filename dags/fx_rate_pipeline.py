@@ -57,7 +57,14 @@ def fx_rate_pipeline():
         )
         ping_heartbeat()
 
-    report(save(validate_rate(fetch())))
+    @task
+    def quality_check(data: dict):
+        from src.quality import check_fx_quality
+
+        check_fx_quality()
+        return data
+
+    report(quality_check(save(validate_rate(fetch()))))
 
 
 fx_rate_pipeline()
