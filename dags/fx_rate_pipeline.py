@@ -4,12 +4,27 @@ import pendulum
 from airflow.sdk import dag, task
 
 
+def notify_failure(context):
+    from src.notify import ping_heartbeat, send_telegram
+
+    ti = context.get("task_instance")
+    task_id = getattr(ti, "task_id", "unknown")
+    send_telegram(
+        f"Airflow FAILED: task '{task_id}' in fx_rate_pipeline. Check the Airflow UI."
+    )
+    ping_heartbeat("/fail")
+
+
 @dag(
     dag_id="fx_rate_pipeline",
     schedule="0 8 * * *",
     start_date=pendulum.datetime(2026, 11, 14, tz="Asia/Jakarta"),
     catchup=False,
-    default_args={"retries": 2, "retry_delay": timedelta(minutes=2)},
+    default_args={
+        "retries": 2,
+        "retry_delay": timedelta(minutes=2),
+        "on_failure_callback": notify_failure,
+    },
     tags=["fraud-risk", "fx"],
 )
 def fx_rate_pipeline():
@@ -31,8 +46,18 @@ def fx_rate_pipeline():
         from src.load.load_fx_rate import save_fx_rate
 
         save_fx_rate(data)
+        return data
 
-    save(validate_rate(fetch()))
+    @task
+    def report(data: dict):
+        from src.notify import ping_heartbeat, send_telegram
+
+        send_telegram(
+            f"Airflow OK: 1 USD = {data['rate']} IDR on {data['date']}"
+        )
+        ping_heartbeat()
+
+    report(save(validate_rate(fetch())))
 
 
 fx_rate_pipeline()
